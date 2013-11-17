@@ -10,7 +10,7 @@ hbTool = "d:\\TestCodec\\FingerPrint\\FingerprintTest\\HBTool.exe"
 hashSearch = "d:\\TestCodec\\FingerPrint\\FingerprintTest\\HashSearch.exe"
 
 dirName = "d:\\TestCodec\\FingerPrint\\FingerprintTest\\"
-aifSet =  "d:\\TestCodec\\FingerPrint\\FingerprintTest\\AifSet\\"
+aifSet = "d:\\TestCodec\\FingerPrint\\FingerprintTest\\AifSet\\"
 baseName = aifSet + "fpBase.hbs"
 baseNameAdditional = aifSet + "fpBase.nbs"
 
@@ -18,7 +18,7 @@ maxLengthCheck = 100
 
 tracks = list()
 
-os.chdir(dirName)
+os.chdir(aifSet)
 
 
 # Читаем файлы из директории
@@ -70,10 +70,10 @@ for track in tracks:
 
 # Режем файлы на куски по 5с с интервалом 0.1с
 for track in tracks:
-    i = 9
-    while i < 10 * min(maxLengthCheck,15): #track.audioLength - 5):
+    i = 0
+    while i < 10 * min(maxLengthCheck, track.audioLength - 5):
         i += 1
-        cutFragmentName = os.path.splitext(track.path)[0] + "_" + str(i) + ".aif"
+        cutFragmentName = os.path.splitext(track.path)[0] + "_" + str(i*100) + ".aif"
         subprocess.check_output([sox, track.path, cutFragmentName, "trim", str(i/10), "5"])
 
         cutHashName = os.path.splitext(cutFragmentName)[0] + ".hash"
@@ -95,6 +95,7 @@ for track in tracks:
 
         print()
         print("Searching " + peaceHashPath)
+        # print(result)
         idIndex = int(result.find("->"))
         if(idIndex>0):
             fpId = result[idIndex+6:].split(':')[0]
