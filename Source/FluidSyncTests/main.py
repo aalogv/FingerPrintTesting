@@ -25,7 +25,7 @@ os.chdir(dirName)
 for dirname, dirnames, filenames in os.walk(aifSet):
     for filename in filenames:
         if fnmatch.fnmatch(filename, '*.aif'):
-            path = os.path.join(dirName, filename)
+            path = os.path.join(aifSet, filename)
             track = Track()
             track.path = path
             tracks.append(track)
@@ -70,8 +70,8 @@ for track in tracks:
 
 # Режем файлы на куски по 5с с интервалом 0.1с
 for track in tracks:
-    i = 10
-    while i < 10 * min(maxLengthCheck, track.audioLength - 5):
+    i = 9
+    while i < 10 * min(maxLengthCheck,15): #track.audioLength - 5):
         i += 1
         cutFragmentName = os.path.splitext(track.path)[0] + "_" + str(i) + ".aif"
         subprocess.check_output([sox, track.path, cutFragmentName, "trim", str(i/10), "5"])
@@ -81,7 +81,7 @@ for track in tracks:
 
         track.peacesHashes.append(cutHashName)
         #print(track.peacesHashes[track.peacesHashes.count - 1])
-        break
+
 
 
 
@@ -90,11 +90,23 @@ time.sleep(1)
 for track in tracks:
     for peaceHashPath in track.peacesHashes:
 
-        result = os.path.splitext(peaceHashPath)[0] + "_result.txt"
+        result = str(subprocess.check_output([hashSearch, "-w", peaceHashPath, baseName]))
+        #idIndex = int(out.find("contains id = "))
 
-        code = subprocess.check_call([hashSearch, "-w", peaceHashPath, baseName, result])
+        print()
+        print("Searching " + peaceHashPath)
+        idIndex = int(result.find("->"))
+        if(idIndex>0):
+            fpId = result[idIndex+6:].split(':')[0]
+            fpId = int(fpId.lstrip('0'))
+            print("FP_ID = " + str(fpId))
 
-        #print("hashSearch exit code = "+ str(code))
+            shiftIndex = int(result.find("shift = "))
+            shift = int(result[shiftIndex+8:].split(' ')[0])
+            print("Shift = " + str(shift))
+        else:
+            print("Search failed")
+
         #print(subprocess.check_output([hashSearch, "-w", peaceHashPath, baseName,result]))
 
 
