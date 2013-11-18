@@ -67,7 +67,7 @@ for track in tracks:
 
 tracks = list()
 
-# Читаем файлы из директории
+# Читаем файлы из директории для резки
 for dirname, dirnames, filenames in os.walk(aifSet):
     for filename in filenames:
         if fnmatch.fnmatch(filename, '*.aif'):
@@ -84,17 +84,18 @@ for track in tracks:
 
 # Режем файлы на куски по 5с с интервалом 0.1с
 for track in tracks:
-    i = 9
-    while i < 10 * min(maxLengthCheck,9): #track.audioLength - 5):
+    i = 0
+    while i < 10 * min(maxLengthCheck, track.audioLength - 5):
         i += 1
         cutFragmentName = os.path.splitext(track.path)[0] + "_" + str(i*100) + ".aif"
         subprocess.check_output([sox, track.path, cutFragmentName, "trim", str(i/10), "5"])
 
         cutHashName = os.path.splitext(cutFragmentName)[0] + ".hash"
         subprocess.check_output([hashBuild, cutFragmentName, cutHashName])
+        os.remove(cutFragmentName)
 
-        track.peacesHashes.append(cutHashName)
-        #track.peacesHashes[cutHashName] = i*100
+        #track.peacesHashes.append(cutHashName)
+        track.peacesHashes[cutHashName] = i*100
         #print(track.peacesHashes[track.peacesHashes.count - 1])
 
 
@@ -102,15 +103,16 @@ for track in tracks:
 
 time.sleep(1)
 # Запись результатов в файл
-#resultFile = open("result.txt", 'w')
+resultFile = open("result.txt", 'w')
 
 #Делаем поиск по маленьким хешам в базе
 for track in tracks:
     for peaceHashPath in track.peacesHashes:
 
         result = str(subprocess.check_output([hashSearch, "-w", peaceHashPath, baseName]))
+        print("result = " + result)
         #idIndex = int(out.find("contains id = "))
-
+        os.remove(peaceHashPath)
         print()
         print("Searching " + peaceHashPath)
         print(result)
@@ -118,19 +120,19 @@ for track in tracks:
         if(idIndex>0):
             fpId = result[idIndex+6:].split(':')[0]
             print(fpId)
-            fpId = int(fpId.lstrip('0'))
+            fpId = int(fpId.lstrip('0'),16)
 
             print("FP_ID = " + str(fpId))
 
             shiftIndex = int(result.find("shift = "))
             shift = int(result[shiftIndex+8:].split(' ')[0])
             print("Shift = " + str(shift))
-            #resultFile.write(peaceHashPath+ "," + str(fpId) + "," + str(shift) + "," + track.peacesHashes[peaceHashPath])
+            resultFile.write(peaceHashPath+ "," + str(fpId) + "," + str(shift) + "," + str(track.peacesHashes[peaceHashPath])+"\n")
         else:
             print("Search failed")
-            #resultFile.write(peaceHashPath+ "," + "Failed" + "," + "Failed" + "," + track.peacesHashes[peaceHashPath])
+            resultFile.write(peaceHashPath+ "," + "Failed" + "," + "Failed" + "," + track.peacesHashes[peaceHashPath]+"\n")
 
-        #print(subprocess.check_output([hashSearch, "-w", peaceHashPath, baseName,result]))
+    # print(subprocess.check_output([hashSearch, "-w", peaceHashPath, baseName,result]))
 
-#resultFile.close()
+resultFile.close()
 

@@ -4,5 +4,5 @@ class Track:
         self.path = ""
         self.hashPath = ""
         self.fingerPrintId = 0
-        self.peacesHashes = list()
+        self.peacesHashes = dict()
         self.audioLength = 0
