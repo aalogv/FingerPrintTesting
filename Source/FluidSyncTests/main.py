@@ -84,7 +84,7 @@ for track in tracks:
 
 # Режем файлы на куски по 5с с интервалом 0.1с
 for track in tracks:
-    i = 10
+    i = 9
     while i < 10 * min(maxLengthCheck,9): #track.audioLength - 5):
         i += 1
         cutFragmentName = os.path.splitext(track.path)[0] + "_" + str(i*100) + ".aif"
